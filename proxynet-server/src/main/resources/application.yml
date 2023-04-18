@@ -1,0 +1,49 @@
+server:
+  port: 9088
+  servlet:
+    context-path: /
+  undertow:
+    # 设置IO线程数, 它主要执行非阻塞的任务,它们会负责多个连接, 默认设置每个CPU核心一个线程
+    io-threads: 4
+    # 阻塞任务线程池, 当执行类似servlet请求阻塞操作, undertow会从这个线程池中取得线程,它的值设置取决于系统的负载
+    worker-threads: 20
+    # 以下的配置会影响buffer,这些buffer会用于服务器连接的IO操作,有点类似netty的池化内存管理
+    # 每块buffer的空间大小,越小的空间被利用越充分
+    buffer-size: 1024
+    # 是否分配的直接内存
+spring:
+  jackson:
+    serialization:
+      FAIL_ON_EMPTY_BEANS: false
+    date-format: yyyy-MM-dd HH:mm:ss
+    # 指定时间区域类型 东8区时区 既北京时间
+    time-zone: GMT+8
+  mvc:
+    async:
+      request-timeout: 30000
+    pathmatch:
+      matching-strategy: ant_path_matcher
+  swagger:
+    enable: true
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 10MB
+  main:
+    allow-circular-references: true
+    
+    
+proxynet:
+  server:
+    clientPort: 9555
+    proxyInfos:
+      - clientId: 1
+        name: mysql
+        serverPort: 7788
+        targetIp: 127.0.0.1
+        targetPort: 3306
+      - clientId: 2
+        name: tcp
+        serverPort: 7789
+        targetIp: 127.0.0.1
+        targetPort: 3434

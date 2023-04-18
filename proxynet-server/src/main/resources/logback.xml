@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>  
+    <!-- ch.qos.logback.core.ConsoleAppender 控制台输出 -->  
+    <appender name="console" class="ch.qos.logback.core.ConsoleAppender">  
+        <encoder>  
+            <pattern>[%-5level] %d{yyyy-MM-dd HH:mm:ss.SSS,CTT} [%thread] %logger{36} - %msg%n  
+            </pattern>  
+        </encoder>  
+    </appender>  
+    <!-- ch.qos.logback.core.rolling.RollingFileAppender 文件日志输出 -->  
+    <appender name="file-info"  
+        class="ch.qos.logback.core.rolling.RollingFileAppender">  
+        <File>/logs/proxynet-server-info.log</File>  
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">  
+            <FileNamePattern>/logs/proxynet-server-info-%d{yyyy-MM-dd,CTT}.%i.log  
+            </FileNamePattern>  
+            <MaxHistory>10</MaxHistory>  
+            <TimeBasedFileNamingAndTriggeringPolicy  
+                class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">  
+                <MaxFileSize>50MB</MaxFileSize>  
+            </TimeBasedFileNamingAndTriggeringPolicy>  
+        </rollingPolicy>  
+        <layout class="ch.qos.logback.classic.PatternLayout">  
+            <pattern>[%-5level] %d{yyyy-MM-dd HH:mm:ss.SSS,CTT} [%thread] %logger{36} - %msg%n  
+            </pattern>  
+        </layout>
+    </appender>
+
+    <appender name="file-warn"
+              class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <File>/logs/proxynet-server-warn.log</File>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <FileNamePattern>/logs/proxynet-server-warn-%d{yyyy-MM-dd,CTT}.%i.log
+            </FileNamePattern>
+            <MaxHistory>10</MaxHistory>
+            <TimeBasedFileNamingAndTriggeringPolicy
+                    class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
+                <MaxFileSize>50MB</MaxFileSize>
+            </TimeBasedFileNamingAndTriggeringPolicy>
+        </rollingPolicy>
+        <layout class="ch.qos.logback.classic.PatternLayout">
+            <pattern>[%-5level] %d{yyyy-MM-dd HH:mm:ss.SSS,CTT} [%thread] %logger{36} - %msg%n
+            </pattern>
+        </layout>
+        <filter class="ch.qos.logback.classic.filter.ThresholdFilter"><!-- 只打印WARN日志 -->
+            <level>WARN</level>
+        </filter>
+    </appender>
+    <appender name="file-error"
+              class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <File>/logs/proxynet-server-error.log</File>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <FileNamePattern>/logs/proxynet-server-error-%d{yyyy-MM-dd,CTT}.%i.log
+            </FileNamePattern>
+            <MaxHistory>10</MaxHistory>
+            <TimeBasedFileNamingAndTriggeringPolicy
+                    class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
+                <MaxFileSize>50MB</MaxFileSize>
+            </TimeBasedFileNamingAndTriggeringPolicy>
+        </rollingPolicy>
+        <layout class="ch.qos.logback.classic.PatternLayout">
+            <pattern>[%-5level] %d{yyyy-MM-dd HH:mm:ss.SSS,CTT} [%thread] %logger{36} - %msg%n
+            </pattern>
+        </layout>
+        <filter class="ch.qos.logback.classic.filter.ThresholdFilter"><!-- 只打印ERROR日志 -->
+            <level>ERROR</level>
+        </filter>
+    </appender>
+
+    
+    <logger name="org.apache.kafka.clients.consumer.ConsumerConfig" level="WARN" />
+
+
+    <!-- 异步输出 -->
+    <appender name="ASYNC-INFO" class="ch.qos.logback.classic.AsyncAppender">
+        <!-- 不丢失日志.默认的,如果队列的80%已满,则会丢弃TRACT、DEBUG、INFO级别的日志 -->
+        <discardingThreshold>0</discardingThreshold>
+        <!-- 更改默认的队列的深度,该值会影响性能.默认值为256 -->
+        <queueSize>1256</queueSize>
+        <!-- 添加附加的appender,最多只能添加一个 -->
+        <appender-ref ref="file-info"/>
+    </appender>
+
+    <appender name="ASYNC-ERROR" class="ch.qos.logback.classic.AsyncAppender">
+        <!-- 不丢失日志.默认的,如果队列的80%已满,则会丢弃TRACT、DEBUG、INFO级别的日志 -->
+        <discardingThreshold>0</discardingThreshold>
+        <!-- 更改默认的队列的深度,该值会影响性能.默认值为256 -->
+        <queueSize>1256</queueSize>
+        <!-- 添加附加的appender,最多只能添加一个 -->
+        <appender-ref ref="file-warn"/>
+    </appender>
+
+    <appender name="ASYNC-ERROR" class="ch.qos.logback.classic.AsyncAppender">
+        <!-- 不丢失日志.默认的,如果队列的80%已满,则会丢弃TRACT、DEBUG、INFO级别的日志 -->
+        <discardingThreshold>0</discardingThreshold>
+        <!-- 更改默认的队列的深度,该值会影响性能.默认值为256 -->
+        <queueSize>1256</queueSize>
+        <!-- 添加附加的appender,最多只能添加一个 -->
+        <appender-ref ref="file-error"/>
+    </appender>
+    
+    <!-- 日志级别 -->  
+    <root>  
+        <!-- 定义了ERROR和INFO级别的日志，分别在FILE文件和控制台输出 -->  
+        <level value="error" />  
+        <level value="debug" />
+        <level value="warn" />
+        <level value="info" />
+        <appender-ref ref="file-info" />   
+        <appender-ref ref="file-warn" />   
+        <appender-ref ref="file-error" />   
+        <appender-ref ref="console" />  
+    </root>  
+</configuration> 
