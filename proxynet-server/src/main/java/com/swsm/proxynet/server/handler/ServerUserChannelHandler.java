@@ -61,6 +61,7 @@ public class ServerUserChannelHandler extends SimpleChannelInboundHandler<ByteBu
                 log.warn("服务端未配置该代理，告诉用户端此时不能访问");
                 ctx.close();
             }
+            userChannel.config().setAutoRead(false);
             clientToServerChannel.writeAndFlush(ProxyNetMessage.buildConnectMessage(userId, proxyInfo.getTargetIp(), proxyInfo.getTargetPort()));
         }
     }

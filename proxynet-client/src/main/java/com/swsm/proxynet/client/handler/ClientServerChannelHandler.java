@@ -58,15 +58,15 @@ public class ClientServerChannelHandler extends SimpleChannelInboundHandler<Prox
                             ChannelRelationCache.putTargetChannel(connectMessage.getTargetIp(), connectMessage.getTargetPort(), targetChannel);
                             ChannelRelationCache.putUserChannelToTargetChannel(connectMessage.getUserId(), targetChannel);
                             ChannelRelationCache.putTargetChannelToClientChannel(targetChannel, channelHandlerContext.channel());
-                            channelHandlerContext.writeAndFlush(ProxyNetMessage.buildConnectRespMessage("连接目标服务端成功", true));
+                            channelHandlerContext.writeAndFlush(ProxyNetMessage.buildConnectRespMessage("连接目标服务端成功", true, connectMessage.getUserId()));
                         } else {
                             log.info("向目标服务={}发起连接 失败...", proxyNetMessage);
-                            channelHandlerContext.writeAndFlush(ProxyNetMessage.buildConnectRespMessage("连接目标服务端异常", false));
+                            channelHandlerContext.writeAndFlush(ProxyNetMessage.buildConnectRespMessage("连接目标服务端异常", false, connectMessage.getUserId()));
                         }
                     }).sync();
         } catch (InterruptedException e) {
             log.error("客户端连接目标服务器出现异常", e);
-            channelHandlerContext.writeAndFlush(ProxyNetMessage.buildConnectRespMessage("连接目标服务端异常", false));
+            channelHandlerContext.writeAndFlush(ProxyNetMessage.buildConnectRespMessage("连接目标服务端异常", false, connectMessage.getUserId()));
         }
 
     }

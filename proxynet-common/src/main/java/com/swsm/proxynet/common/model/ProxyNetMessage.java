@@ -51,10 +51,10 @@ public class ProxyNetMessage {
         return proxyNetMessage;
     }
 
-    public static ProxyNetMessage buildConnectRespMessage(String message, Boolean result) {
+    public static ProxyNetMessage buildConnectRespMessage(String message, Boolean result, String userId) {
         ProxyNetMessage proxyNetMessage = new ProxyNetMessage();
         proxyNetMessage.setType(CONNECT_RESP);
-        proxyNetMessage.setInfo(JSON.toJSONString(new ConnectRespMessage(result, message)));
+        proxyNetMessage.setInfo(JSON.toJSONString(new ConnectRespMessage(result, message, userId)));
         return proxyNetMessage;
     }
     

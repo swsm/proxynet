@@ -52,7 +52,14 @@ public class ServerClientChannelHandler extends SimpleChannelInboundHandler<Prox
             for (Channel channel : userChannelList) {
                 channel.close();
             }
+            return;
         }
+        Channel userChannel = ChannelRelationCache.getUserChannel(connectRespMessage.getUserId());
+        if (userChannel == null) {
+            log.warn("用户id={}的channel已经断开!", connectRespMessage.getUserId());
+            return;
+        }
+        userChannel.config().setAutoRead(true);
     }
 
     private void executeCommand(ChannelHandlerContext channelHandlerContext, ProxyNetMessage proxyNetMessage) {

@@ -15,6 +15,7 @@ public class ConnectRespMessage {
     
     private Boolean result;
     private String message;
+    private String userId;
     
     
     
