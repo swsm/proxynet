@@ -36,6 +36,15 @@ public class ChannelRelationCache {
         return targetAddressToTargetChannel.get(targetIp + "-" + targetPort);
     }
     
+    public static String getUserIdFromUserChannel(Channel channel) {
+        for (String userId : userIdToUserChannel.keySet()) {
+            if (userIdToUserChannel.get(userId).equals(channel)) {
+                return userId;
+            }
+        }
+        return null;
+    }
+    
     public static Channel getClientChannel(Channel targetChannel) {
         return targetChannelToClientChannel.get(targetChannel);
     }
@@ -78,7 +87,7 @@ public class ChannelRelationCache {
     }
     
     public synchronized static void putClientUserChannelRelation(Channel clientChannel, Channel userChanel) {
-        if (clientServerChannelIdToUserChannelIds.contains(clientChannel)) {
+        if (clientServerChannelIdToUserChannelIds.contains(clientChannel.id())) {
             clientServerChannelIdToUserChannelIds.get(clientChannel.id()).add(userChanel.id());
         } else {
             clientServerChannelIdToUserChannelIds.put(clientChannel.id(), Sets.newHashSet(userChanel.id()));

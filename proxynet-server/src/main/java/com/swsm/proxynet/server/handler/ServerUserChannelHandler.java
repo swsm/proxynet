@@ -68,11 +68,11 @@ public class ServerUserChannelHandler extends SimpleChannelInboundHandler<ByteBu
 
     @Override
     public void channelInactive(ChannelHandlerContext ctx) throws Exception {
-        super.channelInactive(ctx);
         ChannelRelationCache.removeUserChannel(serverPort, ctx.channel().id());
         ChannelRelationCache.removeClientUserChannelRelation(ctx.channel().id());
         ctx.close();
-        
+        log.info("userId={}的用户断开连接", ChannelRelationCache.getUserIdFromUserChannel(ctx.channel()));
+        super.channelInactive(ctx);
     }
 
     @Override
