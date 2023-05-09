@@ -12,6 +12,7 @@
         <module>proxynet-server</module>
         <module>proxynet-client</module>
         <module>proxynet-common</module>
+        <module>proxynet-test</module>
     </modules>
 
     <properties>

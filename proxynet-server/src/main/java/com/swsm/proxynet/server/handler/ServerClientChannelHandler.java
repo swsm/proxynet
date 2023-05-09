@@ -85,6 +85,7 @@ public class ServerClientChannelHandler extends SimpleChannelInboundHandler<Prox
             ByteBuf buf = channelHandlerContext.alloc().buffer(proxyNetMessage.getData().length);
             buf.writeBytes(proxyNetMessage.getData());
             userChannel.writeAndFlush(buf);
+            
         }
     }
 
