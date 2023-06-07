@@ -7,6 +7,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -37,6 +38,7 @@ public class JdbcCurTest {
         }
         countDownLatch.await();
         System.out.println("所有任务都完成了...");
+        executorService.shutdown();
         
     }
     
@@ -53,18 +55,18 @@ public class JdbcCurTest {
         @Override
         public void run() {
             try {
-//                Thread.sleep(new Random().nextInt(3) * 1000);
+                Thread.sleep(new Random().nextInt(3) * 1000);
                 List<SysRole> query = query(connection);
                 System.out.println("当前线程" + Thread.currentThread().getName() + "开始...");
                 for (SysRole sysRole : query) {
-                    System.out.println("    sysRole:" + JSON.toJSONString(sysRole));
+                    System.out.println("  当前线程" + Thread.currentThread().getName() + " sysRole:" + JSON.toJSONString(sysRole));
                 }
             } catch (Exception e) {
                 throw new RuntimeException(e);
             } finally {
+                System.out.println("当前线程" + Thread.currentThread().getName() + "结束.countDownLatch=" + countDownLatch.getCount());
                 countDownLatch.countDown();
             }
-            System.out.println("当前线程" + Thread.currentThread().getName() + "结束.countDownLatch=" + countDownLatch.getCount());
             
         }
 

@@ -37,6 +37,7 @@ public class SpringInitRunner implements CommandLineRunner {
     private ProxyConfig proxyConfig;
     
     public static Bootstrap bootstrapForTarget;
+    public static Bootstrap bootstrapForServer;
     
     
     @Override
@@ -44,7 +45,7 @@ public class SpringInitRunner implements CommandLineRunner {
         log.info("proxyclient spring启动完成，接下来启动 连接代理服务器的客户端");
         
         log.info("启动 连接代理服务器的客户端...");
-        Bootstrap bootstrapForServer = new Bootstrap();
+        bootstrapForServer = new Bootstrap();
         bootstrapForServer.group(new NioEventLoopGroup(4))
                 .channel(NioSocketChannel.class)
                 .handler(new ChannelInitializer<SocketChannel>() {

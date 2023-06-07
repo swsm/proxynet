@@ -1,7 +1,9 @@
 package com.swsm.proxynet.client.handler;
 
 import com.alibaba.fastjson.JSON;
+import com.swsm.proxynet.client.config.ConfigUtil;
 import com.swsm.proxynet.client.init.SpringInitRunner;
+import com.swsm.proxynet.common.Constants;
 import com.swsm.proxynet.common.cache.ChannelRelationCache;
 import com.swsm.proxynet.common.model.CommandInfoMessage;
 import com.swsm.proxynet.common.model.CommandMessage;
@@ -11,6 +13,7 @@ import io.netty.buffer.ByteBuf;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
+import io.netty.channel.ChannelOption;
 import io.netty.channel.SimpleChannelInboundHandler;
 import lombok.extern.slf4j.Slf4j;
 
@@ -31,10 +34,11 @@ public class ClientServerChannelHandler extends SimpleChannelInboundHandler<Prox
     }
 
     private void executeCommand(ProxyNetMessage proxyNetMessage, ChannelHandlerContext channelHandlerContext) {
+        Channel clientChannel = channelHandlerContext.channel();
         CommandMessage commandMessage = JSON.parseObject(proxyNetMessage.getInfo(), CommandMessage.class);
         if (ProxyNetMessage.COMMAND_INFO.equals(commandMessage.getType())) {
             CommandInfoMessage commandInfoMessage = JSON.parseObject(commandMessage.getMessage(), CommandInfoMessage.class);
-            Channel targetChannel = ChannelRelationCache.getTargetChannel(commandInfoMessage.getTargetIp(), commandInfoMessage.getTargetPort());
+            Channel targetChannel = clientChannel.attr(Constants.NEXT_CHANNEL).get();
             if (targetChannel == null) {
                 log.info("targetInfo={}的客户端还未和代理客户端建立连接", commandInfoMessage.getTargetIp() + ":" + commandInfoMessage.getTargetPort());
                 return;
@@ -54,9 +58,30 @@ public class ClientServerChannelHandler extends SimpleChannelInboundHandler<Prox
                     .addListener((ChannelFutureListener) future -> {
                         Channel targetChannel = future.channel();
                         if (future.isSuccess()) {
+                            targetChannel.config().setOption(ChannelOption.AUTO_READ, false);
                             log.info("向目标服务={}发起连接 成功...", proxyNetMessage);
+
+                            String serverIp = ConfigUtil.getServerIp();
+                            int serverPort = ConfigUtil.getServerPort();
+                            SpringInitRunner.bootstrapForServer.connect(serverIp, serverPort)
+                                    .addListener((ChannelFutureListener) future2 -> {
+                                        if (future2.isSuccess()) {
+                                            Channel newClientChannel = future2.channel();
+                                            log.info("监控--clinetChannelId={},newClientChannelId={},realServerChannelId={},visitorId={}", channelHandlerContext.channel().id().asLongText(), newClientChannel.id().asLongText(),targetChannel.id().asLongText(), connectMessage.getUserId());
+                                            newClientChannel.attr(Constants.NEXT_CHANNEL).set(targetChannel);
+                                            targetChannel.attr(Constants.NEXT_CHANNEL).set(newClientChannel);
+                                            ChannelRelationCache.putUserIdToTargetChannel(connectMessage.getUserId(), targetChannel);
+                                            targetChannel.attr(Constants.VISITOR_ID).set(connectMessage.getUserId());
+                                            newClientChannel.writeAndFlush(ProxyNetMessage.buildConnectRespMessage("连接目标服务端成功", true, connectMessage.getUserId()));
+                                            targetChannel.config().setOption(ChannelOption.AUTO_READ, true);
+                                        } else {
+                                            log.error("客户端向服务端发起新连接失败");
+                                            channelHandlerContext.close();
+                                        }
+                                    });
+                            
                             ChannelRelationCache.putTargetChannel(connectMessage.getTargetIp(), connectMessage.getTargetPort(), targetChannel);
-                            ChannelRelationCache.putUserChannelToTargetChannel(connectMessage.getUserId(), targetChannel);
+                            ChannelRelationCache.putUserIdToTargetChannel(connectMessage.getUserId(), targetChannel);
                             ChannelRelationCache.putTargetChannelToClientChannel(targetChannel, channelHandlerContext.channel());
                             channelHandlerContext.writeAndFlush(ProxyNetMessage.buildConnectRespMessage("连接目标服务端成功", true, connectMessage.getUserId()));
                         } else {

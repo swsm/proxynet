@@ -1,6 +1,7 @@
 package com.swsm.proxynet.server.handler;
 
 import com.alibaba.fastjson.JSON;
+import com.swsm.proxynet.common.Constants;
 import com.swsm.proxynet.common.cache.ChannelRelationCache;
 import com.swsm.proxynet.common.model.CommandInfoMessage;
 import com.swsm.proxynet.common.model.ProxyNetMessage;
@@ -29,7 +30,8 @@ public class ServerUserChannelHandler extends SimpleChannelInboundHandler<ByteBu
 
     @Override
     protected void channelRead0(ChannelHandlerContext channelHandlerContext, ByteBuf byteBuf) throws Exception {
-        Channel clientToServerChannel = ChannelRelationCache.getClientToServerChannel(serverPort);
+        Channel userChannel = channelHandlerContext.channel();
+        Channel clientToServerChannel =  userChannel.attr(Constants.NEXT_CHANNEL).get();
         if (clientToServerChannel == null) {
             log.warn("当前用户channel对应的客户端channel还未存在");
             channelHandlerContext.close();
@@ -64,6 +66,13 @@ public class ServerUserChannelHandler extends SimpleChannelInboundHandler<ByteBu
             userChannel.config().setAutoRead(false);
             clientToServerChannel.writeAndFlush(ProxyNetMessage.buildConnectMessage(userId, proxyInfo.getTargetIp(), proxyInfo.getTargetPort()));
         }
+    }
+
+    @Override
+    public void channelWritabilityChanged(ChannelHandlerContext ctx) throws Exception {
+
+        // 通知代理客户端
+        super.channelWritabilityChanged(ctx);
     }
 
     @Override

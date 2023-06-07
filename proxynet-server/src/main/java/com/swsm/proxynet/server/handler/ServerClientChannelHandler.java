@@ -1,9 +1,9 @@
 package com.swsm.proxynet.server.handler;
 
 import com.alibaba.fastjson.JSON;
+import com.swsm.proxynet.common.Constants;
 import com.swsm.proxynet.common.cache.ChannelRelationCache;
 import com.swsm.proxynet.common.model.CommandMessage;
-import com.swsm.proxynet.common.model.CommandRespMessage;
 import com.swsm.proxynet.common.model.ConnectRespMessage;
 import com.swsm.proxynet.common.model.ProxyNetMessage;
 import com.swsm.proxynet.server.config.ProxyConfig;
@@ -43,12 +43,13 @@ public class ServerClientChannelHandler extends SimpleChannelInboundHandler<Prox
     }
 
     private void executeConnectResp(ProxyNetMessage proxyNetMessage, ChannelHandlerContext channelHandlerContext) {
+        Channel clientChannel = channelHandlerContext.channel();
         ConnectRespMessage connectRespMessage = JSON.parseObject(proxyNetMessage.getInfo(), ConnectRespMessage.class);
         boolean isSuccess = connectRespMessage.getResult();
         log.info("客户端与目标服务连接结果={}", connectRespMessage);
         if (!isSuccess) {
             log.info("客户端与目标服务连接没有成功，关闭所有连接此目标服务的channel", connectRespMessage);
-            List<Channel> userChannelList = ChannelRelationCache.getUserChannelList(channelHandlerContext.channel().id());
+            List<Channel> userChannelList = ChannelRelationCache.getUserChannelList(clientChannel.id());
             for (Channel channel : userChannelList) {
                 channel.close();
             }
@@ -59,6 +60,9 @@ public class ServerClientChannelHandler extends SimpleChannelInboundHandler<Prox
             log.warn("用户id={}的channel已经断开!", connectRespMessage.getUserId());
             return;
         }
+        clientChannel.attr(Constants.VISITOR_ID).set(connectRespMessage.getUserId());
+        clientChannel.attr(Constants.NEXT_CHANNEL).set(userChannel);
+        userChannel.attr(Constants.NEXT_CHANNEL).set(clientChannel);
         userChannel.config().setAutoRead(true);
     }
 
@@ -76,8 +80,7 @@ public class ServerClientChannelHandler extends SimpleChannelInboundHandler<Prox
                 }
             }
         } else if (commandMessage.getType().equals(ProxyNetMessage.COMMAND_RESP)) {
-            CommandRespMessage commandRespMessage = JSON.parseObject(commandMessage.getMessage(), CommandRespMessage.class);
-            Channel userChannel = ChannelRelationCache.getUserChannel(commandRespMessage.getUserId());
+            Channel userChannel = clientChannel.attr(Constants.NEXT_CHANNEL).get();
             if (userChannel == null) {
                 log.warn("用户端和服务端的连接已断开...");
                 return;

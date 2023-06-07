@@ -1,6 +1,7 @@
 package com.swsm.proxynet.client.handler;
 
 import com.alibaba.fastjson.JSON;
+import com.swsm.proxynet.common.Constants;
 import com.swsm.proxynet.common.cache.ChannelRelationCache;
 import com.swsm.proxynet.common.model.CommandRespMessage;
 import com.swsm.proxynet.common.model.ProxyNetMessage;
@@ -21,7 +22,7 @@ public class ClientTargetChannelHandler extends SimpleChannelInboundHandler<Byte
     @Override
     protected void channelRead0(ChannelHandlerContext channelHandlerContext, ByteBuf byteBuf) throws Exception {
         Channel targetChannel = channelHandlerContext.channel();
-        Channel clientChannel = ChannelRelationCache.getClientChannel(targetChannel);
+        Channel clientChannel = targetChannel.attr(Constants.NEXT_CHANNEL).get();
         if (clientChannel == null) {
             log.warn("目的端返回给代理端信息，但代理端和服务端的channel已关闭");
             targetChannel.close();

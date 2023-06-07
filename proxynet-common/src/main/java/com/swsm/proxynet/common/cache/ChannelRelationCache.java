@@ -120,7 +120,7 @@ public class ChannelRelationCache {
         targetChannelToClientChannel.put(targetChannel, clientChannel);
     }
 
-    public synchronized static void putUserChannelToTargetChannel(String userId, Channel targetChannel) {
+    public synchronized static void putUserIdToTargetChannel(String userId, Channel targetChannel) {
         userIdToTargetChannel.put(userId, targetChannel);
     }
 
