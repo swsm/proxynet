@@ -1,4 +1,4 @@
-package com.swsm.test;
+package com.swsm.test.mysql;
 
 import java.util.Date;
 

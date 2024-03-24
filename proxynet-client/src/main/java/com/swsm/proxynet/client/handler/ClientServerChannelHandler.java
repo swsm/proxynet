@@ -67,7 +67,7 @@ public class ClientServerChannelHandler extends SimpleChannelInboundHandler<Prox
                                     .addListener((ChannelFutureListener) future2 -> {
                                         if (future2.isSuccess()) {
                                             Channel newClientChannel = future2.channel();
-                                            log.info("监控--clinetChannelId={},newClientChannelId={},realServerChannelId={},visitorId={}", channelHandlerContext.channel().id().asLongText(), newClientChannel.id().asLongText(),targetChannel.id().asLongText(), connectMessage.getUserId());
+                                            log.info("监控--clinetChannelId={},newClientChannelId={},realServerChannelId={},visitorId={}", channelHandlerContext.channel().id().asShortText(), newClientChannel.id().asLongText(),targetChannel.id().asShortText(), connectMessage.getUserId());
                                             newClientChannel.attr(Constants.NEXT_CHANNEL).set(targetChannel);
                                             targetChannel.attr(Constants.NEXT_CHANNEL).set(newClientChannel);
                                             ChannelRelationCache.putUserIdToTargetChannel(connectMessage.getUserId(), targetChannel);
@@ -82,8 +82,6 @@ public class ClientServerChannelHandler extends SimpleChannelInboundHandler<Prox
                             
                             ChannelRelationCache.putTargetChannel(connectMessage.getTargetIp(), connectMessage.getTargetPort(), targetChannel);
                             ChannelRelationCache.putUserIdToTargetChannel(connectMessage.getUserId(), targetChannel);
-                            ChannelRelationCache.putTargetChannelToClientChannel(targetChannel, channelHandlerContext.channel());
-                            channelHandlerContext.writeAndFlush(ProxyNetMessage.buildConnectRespMessage("连接目标服务端成功", true, connectMessage.getUserId()));
                         } else {
                             log.info("向目标服务={}发起连接 失败...", proxyNetMessage);
                             channelHandlerContext.writeAndFlush(ProxyNetMessage.buildConnectRespMessage("连接目标服务端异常", false, connectMessage.getUserId()));

@@ -1,5 +1,6 @@
 package com.swsm.proxynet.server.handler;
 
+import cn.hutool.core.lang.UUID;
 import com.alibaba.fastjson.JSON;
 import com.swsm.proxynet.common.Constants;
 import com.swsm.proxynet.common.cache.ChannelRelationCache;
@@ -11,7 +12,6 @@ import io.netty.buffer.ByteBuf;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
-import java.util.UUID;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -56,7 +56,7 @@ public class ServerUserChannelHandler extends SimpleChannelInboundHandler<ByteBu
         } else {
             ChannelRelationCache.putClientUserChannelRelation(clientToServerChannel, userChannel);
             ChannelRelationCache.putUserChannel(serverPort, userChannel);
-            String userId = UUID.randomUUID().toString();
+            String userId = UUID.fastUUID().toString(true);
             ChannelRelationCache.putUserIdToUserChannel(userId, userChannel);
             ProxyConfig.ProxyInfo proxyInfo = ConfigUtil.getProxyInfo(serverPort);
             if (proxyInfo == null) {
@@ -77,16 +77,17 @@ public class ServerUserChannelHandler extends SimpleChannelInboundHandler<ByteBu
 
     @Override
     public void channelInactive(ChannelHandlerContext ctx) throws Exception {
+        log.error("用户channel={} inactive", ctx.channel().id());
         ChannelRelationCache.removeUserChannel(serverPort, ctx.channel().id());
         ChannelRelationCache.removeClientUserChannelRelation(ctx.channel().id());
         ctx.close();
-        log.info("userId={}的用户断开连接", ChannelRelationCache.getUserIdFromUserChannel(ctx.channel()));
         super.channelInactive(ctx);
     }
 
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
-        log.error("用户channel出现异常", cause);
+        log.error("用户channel={}出现异常", ctx.channel().id(), cause);
+        log.info("userId={}的用户断开连接", ChannelRelationCache.getUserIdFromUserChannel(ctx.channel()));
         ChannelRelationCache.removeUserChannel(serverPort, ctx.channel().id());
         ChannelRelationCache.removeClientUserChannelRelation(ctx.channel().id());
         ctx.close();

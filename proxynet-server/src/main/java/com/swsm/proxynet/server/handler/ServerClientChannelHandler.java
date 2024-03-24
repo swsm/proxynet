@@ -124,7 +124,7 @@ public class ServerClientChannelHandler extends SimpleChannelInboundHandler<Prox
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
         ChannelRelationCache.removeClientChannel(ctx.channel().id());
-        super.exceptionCaught(ctx, cause);
+        log.error("发生异常", cause);
         if (ctx.channel().isActive()) {
             ctx.channel().close();
         }

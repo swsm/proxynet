@@ -27,27 +27,18 @@ public class ChannelRelationCache {
     
     private static ConcurrentMap<String, Channel> targetAddressToTargetChannel = new ConcurrentHashMap<>();
     
-    private static ConcurrentMap<Channel, Channel> targetChannelToClientChannel = new ConcurrentHashMap<>();
     private static ConcurrentMap<String, Channel> userIdToTargetChannel = new ConcurrentHashMap<>();
     private static ConcurrentMap<String, ChannelId> userIdToUserChannel = new ConcurrentHashMap<>();
     
-    
-    public static Channel getTargetChannel(String targetIp, Integer targetPort) {
-        return targetAddressToTargetChannel.get(targetIp + "-" + targetPort);
-    }
-    
     public static String getUserIdFromUserChannel(Channel channel) {
         for (String userId : userIdToUserChannel.keySet()) {
-            if (userIdToUserChannel.get(userId).equals(channel)) {
+            if (userIdToUserChannel.get(userId).equals(channel.id())) {
                 return userId;
             }
         }
         return null;
     }
     
-    public static Channel getClientChannel(Channel targetChannel) {
-        return targetChannelToClientChannel.get(targetChannel);
-    }
     
     public static Channel getClientToServerChannel(int serverPort) {
         for (ChannelId channelId : clientServerChannelIdToServerPort.keySet()) {
@@ -116,20 +107,12 @@ public class ChannelRelationCache {
         targetAddressToTargetChannel.put(targetIp + "-" + targetPort, channel);
     }
     
-    public synchronized static void putTargetChannelToClientChannel(Channel targetChannel, Channel clientChannel) {
-        targetChannelToClientChannel.put(targetChannel, clientChannel);
-    }
-
     public synchronized static void putUserIdToTargetChannel(String userId, Channel targetChannel) {
         userIdToTargetChannel.put(userId, targetChannel);
     }
 
     public static synchronized void putUserIdToUserChannel(String userId, Channel userChannel) {
         userIdToUserChannel.put(userId, userChannel.id());
-    }
-    
-    public static void removeTargetChannelToClientChannel(Channel targetChannel) {
-        targetChannelToClientChannel.remove(targetChannel);
     }
     
     public static void removeTargetChannel(Channel channel) {

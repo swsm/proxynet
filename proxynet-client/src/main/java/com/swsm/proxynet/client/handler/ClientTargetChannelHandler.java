@@ -43,7 +43,6 @@ public class ClientTargetChannelHandler extends SimpleChannelInboundHandler<Byte
     @Override
     public void channelInactive(ChannelHandlerContext ctx) throws Exception {
         ChannelRelationCache.removeTargetChannel(ctx.channel());
-        ChannelRelationCache.removeTargetChannelToClientChannel(ctx.channel());
         ctx.close();
     }
 
@@ -51,7 +50,6 @@ public class ClientTargetChannelHandler extends SimpleChannelInboundHandler<Byte
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
         super.exceptionCaught(ctx, cause);
         ChannelRelationCache.removeTargetChannel(ctx.channel());
-        ChannelRelationCache.removeTargetChannelToClientChannel(ctx.channel());
         ctx.close();
     }
 

@@ -1,6 +1,7 @@
-package com.swsm.test;
+package com.swsm.test.mysql;
 
 import com.alibaba.fastjson.JSON;
+import com.swsm.test.RowToModel;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;

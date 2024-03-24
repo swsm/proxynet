@@ -43,7 +43,12 @@ proxynet:
         targetIp: 127.0.0.1
         targetPort: 3306
       - clientId: 2
-        name: tcp
+        name: pg
         serverPort: 7789
+        targetIp: 127.0.0.1
+        targetPort: 5432
+      - clientId: 3
+        name: tcp
+        serverPort: 7790
         targetIp: 127.0.0.1
         targetPort: 3434
